@@ -9,35 +9,48 @@ using Raven.Client.Documents.BulkInsert;
 
 namespace ConsoleApplication6
 {
-    public class Child
+    //public class Child
+    //{
+    //    public string Name { get; set; }
+    //    public DateTime Birthday { get; set; }
+    //    public Father Father { get; set; }
+    //    public Mother Mother { get; set; }
+    //}
+
+    //public class Father
+    //{
+    //    public string Name { get; set; }
+    //}
+
+    //public class Mother
+    //{
+    //    public string Name { get; set; }
+    //}
+
+    //public class User
+    //{
+    //    public int Score;
+    //    public string Name;
+    //    public DateTime CreatedAt;
+    //}
+
+    public class Customer
     {
+        public string Id { get; set; }
         public string Name { get; set; }
-        public DateTime Birthday { get; set; }
-        public Father Father { get; set; }
-        public Mother Mother { get; set; }
     }
 
-    public class Father
+    public class SupportCall
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
+        public string CustomerId { get; set; }
+        public DateTime StartDay { get; set; }
+        public DateTime EndDay { get; set; }
+        public string Issue { get; set; }
     }
 
-    public class Mother
-    {
-        public string Name { get; set; }
-    }
     internal class Program
     {
-
-        public class User
-        {
-            public int Score;
-            public string Name;
-            public DateTime CreatedAt;
-        }
-
-        
-
         private static char[] _buffer = new char[6];
         private static string RandomName(Random rand)
         {
@@ -53,7 +66,7 @@ namespace ConsoleApplication6
             using (var store = new DocumentStore
             {
                 Urls = new[] { "http://localhost:8080" },
-                Database = "Test"
+                Database = "Benchmark_RavenDB"
             }.Initialize())
             {
                 var sp = Stopwatch.StartNew();
@@ -86,24 +99,46 @@ namespace ConsoleApplication6
                 //        }
                 //    }
                 //});
+                //using (var bulk = store.BulkInsert())
+                //{
+                //    var rand = new Random();
+                //    for (int i = 0; i < 100 * 1000; i++)
+                //    {
+                //        bulk.Store(new Child
+                //        {
+                //            Name = RandomName(rand),
+                //            Birthday = DateTime.Today.AddDays(rand.Next(365)),
+                //            Father = new Father
+                //            {
+                //                Name = RandomName(rand)
+                //            },
+                //            Mother = new Mother
+                //            {
+                //                Name = RandomName(rand)
+                //            }
+                //        });
+                //    }
+                //}
                 using (var bulk = store.BulkInsert())
                 {
                     var rand = new Random();
-                    for (int i = 0; i < 100 * 1000; i++)
+                    for (int i = 1; i < (10000 * 10000 + 1); i++)
                     {
-                        bulk.Store(new Child
+                        Customer customer = new Customer
                         {
-                            Name = RandomName(rand),
-                            Birthday = DateTime.Today.AddDays(rand.Next(365)),
-                            Father = new Father
-                            {
-                                Name = RandomName(rand)
-                            },
-                            Mother = new Mother
-                            {
-                                Name = RandomName(rand)
-                            }
-                        });
+                            Id = Guid.NewGuid().ToString(),
+                            Name = RandomName(rand)
+                        };
+                        SupportCall supportCall = new SupportCall
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            CustomerId = customer.Id,
+                            EndDay = DateTime.Today.AddDays(rand.Next(365)),
+                            StartDay = DateTime.Today.AddDays(rand.Next(365)),
+                            Issue = RandomName(rand)
+                        };
+                        bulk.Store(customer);
+                        bulk.Store(supportCall);
                     }
                 }
 
